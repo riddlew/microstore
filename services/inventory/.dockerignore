@@ -1,0 +1,25 @@
+!src/
+!pom.xml
+
+# Build artifacts
+target/
+build/
+
+# Local logs
+logs/
+*.log
+
+# Version control
+.git/
+.gitignore
+
+# IDE and OS specific files
+.idea/
+.vscode/
+
+# Other generated files
+**/target/
+**/build/
+
+# Spring Boot specific
+.mvn/
