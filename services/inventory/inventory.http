@@ -1,0 +1,69 @@
+# Create item
+
+POST http://localhost:8080/api/inventory
+Content-Type: application/json
+
+{
+    "sku": "SKU-1001",
+    "name": "Test Item 1001",
+    "description": "This is a test item",
+    "quantity": 10,
+    "priceInCents": 14999
+}
+###
+POST http://localhost:8080/api/inventory
+Content-Type: application/json
+
+{
+"sku": "SKU-1002",
+"name": "Test Item 1002",
+"description": "This is a cheaper test item",
+"quantity": 5,
+"priceInCents": 8999
+}
+
+###
+
+# List all items
+
+GET http://localhost:8080/api/inventory
+
+###
+
+# List all items with price >= 9000
+
+GET http://localhost:8080/api/inventory?page=0&size=2&minPrice=9000
+
+###
+
+# List all items with page size
+
+GET http://localhost:8080/api/inventory?page=0&size=1
+###
+GET http://localhost:8080/api/inventory?page=1&size=1
+###
+GET http://localhost:8080/api/inventory?page=0&size=5
+
+###
+
+# Get a specific item
+
+GET http://localhost:8080/api/inventory/SKU-1002
+
+###
+
+# Update item
+
+PATCH http://localhost:8080/api/inventory/SKU-1002
+Content-Type: application/json
+
+{
+	"quantity": 1000,
+    "priceInCents": 100
+}
+
+###
+
+# Delete item
+
+DELETE http://localhost:8080/api/inventory/SKU-1002
