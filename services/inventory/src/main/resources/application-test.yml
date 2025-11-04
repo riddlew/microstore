@@ -1,0 +1,22 @@
+spring:
+  # datasource:
+  #   url: jdbc:postgresql://inventory-db:5432/inventory
+  #   username: dev
+  #   password: dev
+  #   driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+  jackson:
+    time-zone: UTC
+  flyway:
+    enabled: true
+logging:
+  level:
+    org.hibernate.SQL: warn
+    org.hibernate.type.descriptor.sql.BasicBinder: warn
