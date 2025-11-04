@@ -35,6 +35,7 @@ public class InventoryController {
 	}
 
 	@PostMapping
+	@ResponseStatus(org.springframework.http.HttpStatus.CREATED)
 	public ItemResponse createItem(@RequestBody @Valid CreateItemRequest request) {
 		return inventoryService.createItem(request);
 	}
@@ -48,6 +49,7 @@ public class InventoryController {
 	}
 
 	@DeleteMapping("{sku}")
+	@ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
 	public void deleteItem(@PathVariable("sku") String sku) {
 		inventoryService.deleteItem(sku);
 	}
