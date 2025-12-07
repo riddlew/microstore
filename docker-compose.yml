@@ -45,7 +45,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "9000:9000"
+      - "5500:9000"
     depends_on:
       auth-db:
         condition: service_healthy
@@ -66,7 +66,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "9001:8080"
+      - "5501:8080"
     depends_on:
       inventory-db:
         condition: service_healthy

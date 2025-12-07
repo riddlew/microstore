@@ -7,8 +7,8 @@
 ###############################################################################
 
 ### Variables
-@authUrl = http://localhost:9000
-@inventoryUrl = http://localhost:9001
+@authUrl = http://localhost:5500
+@inventoryUrl = http://localhost:5501
 @clientId = orders-service
 @clientSecret = secret
 
@@ -139,7 +139,7 @@ GET {{inventoryUrl}}/api/inventory/DOES-NOT-EXIST
 Authorization: Bearer {{getToken.response.body.access_token}}
 Accept: application/json
 
-### 18. Update item quantity
+### Update item quantity
 PATCH {{inventoryUrl}}/api/inventory/LAPTOP-001
 Authorization: Bearer {{getToken.response.body.access_token}}
 Content-Type: application/json
