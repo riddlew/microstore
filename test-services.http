@@ -1,0 +1,199 @@
+###############################################################################
+# Microstore API Tests
+#
+#   1. Start services: docker compose up -d
+#   2. Wait for services to be healthy
+#   3. Run tests in order (some tests depend on previous ones)
+###############################################################################
+
+### Variables
+@authUrl = http://localhost:9000
+@inventoryUrl = http://localhost:9001
+@clientId = orders-service
+@clientSecret = secret
+
+###############################################################################
+# Auth Service
+###############################################################################
+
+### Auth Service Health Check
+GET {{authUrl}}/actuator/health
+Accept: application/json
+
+### OpenID Configuration Discovery
+GET {{authUrl}}/.well-known/openid-configuration
+Accept: application/json
+
+### JWKS Endpoint
+GET {{authUrl}}/oauth2/jwks
+Accept: application/json
+
+### Get Access Token
+# @name getToken
+POST {{authUrl}}/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {{clientId}}:{{clientSecret}}
+
+grant_type=client_credentials&scope=inventory.read inventory.write
+
+### Get Access Token (Invalid credentials, should fail)
+POST {{authUrl}}/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {{clientId}}:wrong-secret
+
+grant_type=client_credentials&scope=inventory.read
+
+###############################################################################
+# Inventory Service (without auth)
+###############################################################################
+
+### Get All Items (No auth, should return 401)
+GET {{inventoryUrl}}/api/inventory
+
+### Create Item (No auth, should return 401)
+POST {{inventoryUrl}}/api/inventory
+Content-Type: application/json
+
+{
+  "sku": "LAPTOP-001",
+  "name": "Gaming Laptop",
+  "description": "High-performance gaming laptop",
+  "quantity": 10,
+  "reorderLevel": 5,
+  "reorderQuantity": 10
+}
+
+###############################################################################
+# Inventory Service (with auth)
+# Note: Run "Get Access Token" first
+###############################################################################
+
+### Get all inventory items
+GET {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getToken.response.body.access_token}}
+Accept: application/json
+
+### Get all items sorted by name ascending
+GET {{inventoryUrl}}/api/inventory?sort=name,asc
+Authorization: Bearer {{getToken.response.body.access_token}}
+Accept: application/json
+
+### Get all items with pagination
+GET {{inventoryUrl}}/api/inventory?page=0&size=2
+Authorization: Bearer {{getToken.response.body.access_token}}
+Accept: application/json
+
+### Create laptop
+# @name createLaptop
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "LAPTOP-001",
+  "name": "Gaming Laptop",
+  "description": "High-performance gaming laptop with RTX 4080",
+  "quantity": 10,
+  "reorderLevel": 5,
+  "reorderQuantity": 10
+}
+
+### Create mouse
+# @name createMouse
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "MOUSE-001",
+  "name": "Wireless Mouse",
+  "description": "Ergonomic wireless mouse",
+  "quantity": 50,
+  "reorderLevel": 20,
+  "reorderQuantity": 30
+}
+
+### Create keyboard
+# @name createKeyboard
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "KEYBOARD-001",
+  "name": "Mechanical Keyboard",
+  "description": "RGB mechanical keyboard with cherry MX switches",
+  "quantity": 25,
+  "reorderLevel": 10,
+  "reorderQuantity": 20
+}
+
+### Get specific item by SKU
+GET {{inventoryUrl}}/api/inventory/LAPTOP-001
+Authorization: Bearer {{getToken.response.body.access_token}}
+Accept: application/json
+
+
+### Invalid get request (should return 404)
+GET {{inventoryUrl}}/api/inventory/DOES-NOT-EXIST
+Authorization: Bearer {{getToken.response.body.access_token}}
+Accept: application/json
+
+### 18. Update item quantity
+PATCH {{inventoryUrl}}/api/inventory/LAPTOP-001
+Authorization: Bearer {{getToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### Update with invalid token (should return 401)
+PATCH {{inventoryUrl}}/api/inventory/LAPTOP-001
+Authorization: Bearer invalid-token-12345
+Content-Type: application/json
+
+{
+  "quantity": 999
+}
+
+### 23. Delete item
+DELETE {{inventoryUrl}}/api/inventory/KEYBOARD-001
+Authorization: Bearer {{getToken.response.body.access_token}}
+
+
+###############################################################################
+# EDGE CASES & VALIDATION TESTS
+###############################################################################
+
+### Create item with duplicate SKU should fail
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "TEST-DUP",
+  "name": "Test Duplicate",
+  "description": "First item",
+  "quantity": 10,
+  "reorderLevel": 5,
+  "reorderQuantity": 10
+}
+
+###
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "TEST-DUP",
+  "name": "Test Duplicate Again",
+  "description": "Second item with same SKU",
+  "quantity": 20,
+  "reorderLevel": 5,
+  "reorderQuantity": 10
+}
+
+### Cleanup test duplicate
+DELETE {{inventoryUrl}}/api/inventory/TEST-DUP
+Authorization: Bearer {{getToken.response.body.access_token}}
