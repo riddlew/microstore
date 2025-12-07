@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/authdb
+    username: auth_user
+    password: auth_pass
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+

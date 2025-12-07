@@ -1,6 +1,7 @@
 services:
   inventory-db:
     image: postgres:16
+    container_name: microstore-inventory-db
     environment:
       POSTGRES_DB: inventory
       POSTGRES_USER: dev
@@ -12,3 +13,78 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+    networks:
+      - microstore-network
+
+  auth-db:
+    image: postgres:16-alpine
+    container_name: microstore-auth-db
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d authdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - microstore-network
+
+  auth:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    container_name: microstore-auth
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "9000:9000"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:9000/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - microstore-network
+
+  inventory:
+    build:
+      context: ./services/inventory
+      dockerfile: Dockerfile
+    container_name: microstore-inventory
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "9001:8080"
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:9001/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - microstore-network
+
+networks:
+  microstore-network:
+    driver: bridge
+
+volumes:
+  auth-db-data:
+  inventory-db-data:

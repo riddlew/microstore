@@ -2,8 +2,8 @@
 !pom.xml
 
 # Build artifacts
-target/
-build/
+#target/
+#build/
 
 # Local logs
 logs/
@@ -18,8 +18,8 @@ logs/
 .vscode/
 
 # Other generated files
-**/target/
-**/build/
+#**/target/
+#**/build/
 
 # Spring Boot specific
-.mvn/
+#.mvn/

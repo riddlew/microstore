@@ -16,3 +16,8 @@ spring:
     time-zone: UTC
   flyway:
     enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth:9000

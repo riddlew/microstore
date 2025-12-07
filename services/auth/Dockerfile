@@ -16,7 +16,7 @@ RUN ./mvnw dependency:go-offline -B || true
 # Copy source code
 COPY src ./src
 
-# Build the application (MapStruct will generate the mapper implementation here)
+# Build the application
 RUN ./mvnw clean package -DskipTests -B
 
 # Runtime stage
@@ -26,5 +26,6 @@ WORKDIR /app
 # Copy the built JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+EXPOSE 9000
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
