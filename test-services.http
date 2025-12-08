@@ -9,7 +9,9 @@
 ### Variables
 @authUrl = http://localhost:5500
 @inventoryUrl = http://localhost:5501
-@clientId = orders-service
+@ordersUrl = http://localhost:5502
+@inventoryClientId = inventory-service
+@ordersClientId = orders-service
 @clientSecret = secret
 
 ###############################################################################
@@ -28,24 +30,108 @@ Accept: application/json
 GET {{authUrl}}/oauth2/jwks
 Accept: application/json
 
-### Get Access Token
-# @name getToken
+
+###############################################################################
+# Inventory Service
+###############################################################################
+
+### Get Inventory Service Access Token
+# @name getInventoryToken
 POST {{authUrl}}/oauth2/token
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic {{clientId}}:{{clientSecret}}
+Authorization: Basic {{inventoryClientId}}:{{clientSecret}}
 
 grant_type=client_credentials&scope=inventory.read inventory.write
 
-### Get Access Token (Invalid credentials, should fail)
+### Get all inventory items
+GET {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Accept: application/json
+
+### Get all items sorted by name ascending
+GET {{inventoryUrl}}/api/inventory?sort=name,asc
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Accept: application/json
+
+### Get all items with pagination
+GET {{inventoryUrl}}/api/inventory?page=0&size=2
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Accept: application/json
+
+### Create laptop
+# @name createLaptop
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "LAPTOP-001",
+  "name": "Gaming Laptop",
+  "description": "High-performance gaming laptop with RTX 4080",
+  "quantity": 10,
+  "reorderLevel": 5,
+  "reorderQuantity": 10
+}
+
+### Create mouse
+# @name createMouse
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "MOUSE-001",
+  "name": "Wireless Mouse",
+  "description": "Ergonomic wireless mouse",
+  "quantity": 50,
+  "reorderLevel": 20,
+  "reorderQuantity": 30
+}
+
+### Create keyboard
+# @name createKeyboard
+POST {{inventoryUrl}}/api/inventory
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "sku": "KEYBOARD-001",
+  "name": "Mechanical Keyboard",
+  "description": "RGB mechanical keyboard with cherry MX switches",
+  "quantity": 25,
+  "reorderLevel": 10,
+  "reorderQuantity": 20
+}
+
+### Get specific item by SKU
+GET {{inventoryUrl}}/api/inventory/LAPTOP-001
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Accept: application/json
+
+### Update item quantity
+PATCH {{inventoryUrl}}/api/inventory/LAPTOP-001
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### Delete item
+DELETE {{inventoryUrl}}/api/inventory/KEYBOARD-001
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+
+
+###############################################################################
+# Inventory Validation Tests
+###############################################################################
+
+### Get Inventory Service Access Token (Invalid credentials, should fail)
 POST {{authUrl}}/oauth2/token
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic {{clientId}}:wrong-secret
+Authorization: Basic {{inventoryClientId}}:wrong-secret
 
 grant_type=client_credentials&scope=inventory.read
-
-###############################################################################
-# Inventory Service (without auth)
-###############################################################################
 
 ### Get All Items (No auth, should return 401)
 GET {{inventoryUrl}}/api/inventory
@@ -63,90 +149,10 @@ Content-Type: application/json
   "reorderQuantity": 10
 }
 
-###############################################################################
-# Inventory Service (with auth)
-# Note: Run "Get Access Token" first
-###############################################################################
-
-### Get all inventory items
-GET {{inventoryUrl}}/api/inventory
-Authorization: Bearer {{getToken.response.body.access_token}}
-Accept: application/json
-
-### Get all items sorted by name ascending
-GET {{inventoryUrl}}/api/inventory?sort=name,asc
-Authorization: Bearer {{getToken.response.body.access_token}}
-Accept: application/json
-
-### Get all items with pagination
-GET {{inventoryUrl}}/api/inventory?page=0&size=2
-Authorization: Bearer {{getToken.response.body.access_token}}
-Accept: application/json
-
-### Create laptop
-# @name createLaptop
-POST {{inventoryUrl}}/api/inventory
-Authorization: Bearer {{getToken.response.body.access_token}}
-Content-Type: application/json
-
-{
-  "sku": "LAPTOP-001",
-  "name": "Gaming Laptop",
-  "description": "High-performance gaming laptop with RTX 4080",
-  "quantity": 10,
-  "reorderLevel": 5,
-  "reorderQuantity": 10
-}
-
-### Create mouse
-# @name createMouse
-POST {{inventoryUrl}}/api/inventory
-Authorization: Bearer {{getToken.response.body.access_token}}
-Content-Type: application/json
-
-{
-  "sku": "MOUSE-001",
-  "name": "Wireless Mouse",
-  "description": "Ergonomic wireless mouse",
-  "quantity": 50,
-  "reorderLevel": 20,
-  "reorderQuantity": 30
-}
-
-### Create keyboard
-# @name createKeyboard
-POST {{inventoryUrl}}/api/inventory
-Authorization: Bearer {{getToken.response.body.access_token}}
-Content-Type: application/json
-
-{
-  "sku": "KEYBOARD-001",
-  "name": "Mechanical Keyboard",
-  "description": "RGB mechanical keyboard with cherry MX switches",
-  "quantity": 25,
-  "reorderLevel": 10,
-  "reorderQuantity": 20
-}
-
-### Get specific item by SKU
-GET {{inventoryUrl}}/api/inventory/LAPTOP-001
-Authorization: Bearer {{getToken.response.body.access_token}}
-Accept: application/json
-
-
 ### Invalid get request (should return 404)
 GET {{inventoryUrl}}/api/inventory/DOES-NOT-EXIST
-Authorization: Bearer {{getToken.response.body.access_token}}
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
 Accept: application/json
-
-### Update item quantity
-PATCH {{inventoryUrl}}/api/inventory/LAPTOP-001
-Authorization: Bearer {{getToken.response.body.access_token}}
-Content-Type: application/json
-
-{
-  "quantity": 5
-}
 
 ### Update with invalid token (should return 401)
 PATCH {{inventoryUrl}}/api/inventory/LAPTOP-001
@@ -157,18 +163,9 @@ Content-Type: application/json
   "quantity": 999
 }
 
-### 23. Delete item
-DELETE {{inventoryUrl}}/api/inventory/KEYBOARD-001
-Authorization: Bearer {{getToken.response.body.access_token}}
-
-
-###############################################################################
-# EDGE CASES & VALIDATION TESTS
-###############################################################################
-
 ### Create item with duplicate SKU should fail
 POST {{inventoryUrl}}/api/inventory
-Authorization: Bearer {{getToken.response.body.access_token}}
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
 Content-Type: application/json
 
 {
@@ -182,7 +179,7 @@ Content-Type: application/json
 
 ###
 POST {{inventoryUrl}}/api/inventory
-Authorization: Bearer {{getToken.response.body.access_token}}
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
 Content-Type: application/json
 
 {
@@ -196,4 +193,208 @@ Content-Type: application/json
 
 ### Cleanup test duplicate
 DELETE {{inventoryUrl}}/api/inventory/TEST-DUP
-Authorization: Bearer {{getToken.response.body.access_token}}
+Authorization: Bearer {{getInventoryToken.response.body.access_token}}
+
+
+###############################################################################
+# Orders Service
+###############################################################################
+
+### Get Orders Service Access Token
+# @name getOrdersToken
+POST {{authUrl}}/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {{ordersClientId}}:{{clientSecret}}
+
+grant_type=client_credentials&scope=inventory.read inventory.write
+
+### Create Order
+# @name createOrder1
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "customerEmail": "john.doe@example.com",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 2
+    }
+  ]
+}
+
+### Create order with multiple items
+# @name createOrder2
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Jane Smith",
+  "customerEmail": "jane.smith@example.com",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 1
+    },
+    {
+      "sku": "MOUSE-001",
+      "quantity": 2
+    }
+  ]
+}
+
+### Get all orders
+GET {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Accept: application/json
+
+### Get order by ID
+GET {{ordersUrl}}/api/orders/{{createOrder1.response.body.id}}
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Accept: application/json
+
+### Get orders by customer email
+GET {{ordersUrl}}/api/orders?customerEmail=john.doe@example.com
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Accept: application/json
+
+
+###############################################################################
+# Order Validation Tests
+###############################################################################
+
+### Create Order (No auth, should return 401)
+POST {{ordersUrl}}/api/orders
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "customerEmail": "john@example.com",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 2
+    }
+  ]
+}
+
+### Get All Orders (No auth, should return 401)
+GET {{ordersUrl}}/api/orders
+
+### Create order (insufficient stock, should return 400)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Bob Wilson",
+  "customerEmail": "bob@example.com",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 999
+    }
+  ]
+}
+
+### Create order (invalid SKU, should return 404 from inventory)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Alice Brown",
+  "customerEmail": "alice@example.com",
+  "items": [
+    {
+      "sku": "DOES-NOT-EXIST",
+      "quantity": 1
+    }
+  ]
+}
+
+### Create order (missing customer name, should return 400)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerEmail": "test@example.com",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 1
+    }
+  ]
+}
+
+### Create Order (invalid email format, should return 400)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Test User",
+  "customerEmail": "not-an-email",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 1
+    }
+  ]
+}
+
+### Create order (empty items list, should return 400)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Test User",
+  "customerEmail": "test@example.com",
+  "items": []
+}
+
+### Create Order - Invalid Quantity (should return 400)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Test User",
+  "customerEmail": "test@example.com",
+  "items": [
+    {
+      "sku": "LAPTOP-001",
+      "quantity": 0
+    }
+  ]
+}
+
+### Create order (missing SKU, should return 400)
+POST {{ordersUrl}}/api/orders
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "customerName": "Test User",
+  "customerEmail": "test@example.com",
+  "items": [
+    {
+      "quantity": 5
+    }
+  ]
+}
+
+### Get order (invalid UUID, should return 400 or 404)
+GET {{ordersUrl}}/api/orders/not-a-valid-uuid
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Accept: application/json
+
+### Get order (non-existent order, should return 404)
+GET {{ordersUrl}}/api/orders/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{getOrdersToken.response.body.access_token}}
+Accept: application/json
