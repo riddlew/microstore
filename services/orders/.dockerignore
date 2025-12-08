@@ -17,3 +17,4 @@ logs/
 
 # Test artifacts
 **/target/test-classes/
+

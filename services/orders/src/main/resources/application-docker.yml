@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://orders-db:5432/ordersdb
+    username: orders_user
+    password: orders_pass
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth:9000
+      client:
+        provider:
+          spring:
+            token-uri: http://auth:9000/oauth2/token
+
+inventory:
+  service:
+    url: http://inventory:8080
+

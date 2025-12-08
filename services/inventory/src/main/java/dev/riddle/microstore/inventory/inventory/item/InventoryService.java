@@ -4,13 +4,13 @@ import dev.riddle.microstore.inventory.inventory.item.dto.CreateItemRequest;
 import dev.riddle.microstore.inventory.inventory.item.dto.ItemResponse;
 import dev.riddle.microstore.inventory.inventory.item.dto.UpdateItemRequest;
 import dev.riddle.microstore.inventory.shared.error.NotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -28,6 +28,7 @@ public class InventoryService {
 		return mapper.toResponse(inventoryItemRepository.save(item));
 	}
 
+	@Transactional(readOnly = true)
 	public Page<ItemResponse> getItemsByQuery(
 		ItemSpecificationFilter filter,
 		@PageableDefault(size = 20, sort = "name") Pageable pageable
@@ -47,6 +48,7 @@ public class InventoryService {
 			.map(mapper::toResponse);
 	}
 
+	@Transactional(readOnly = true)
 	public ItemResponse getItemBySku(String sku) {
 		InventoryItem item = inventoryItemRepository
 			.findBySku(sku)

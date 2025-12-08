@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/ordersdb
+    username: orders_user
+    password: orders_pass
+
+inventory:
+  service:
+    url: http://localhost:8080
+
+logging:
+  level:
+    dev.riddle.microstore: DEBUG
+
