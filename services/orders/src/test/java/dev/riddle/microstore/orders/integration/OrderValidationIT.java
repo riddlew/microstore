@@ -1,7 +1,6 @@
 package dev.riddle.microstore.orders.integration;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
@@ -27,14 +26,18 @@ class OrderValidationIT {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
+        // Use Testcontainers-provided JDBC URL (mapped host/port, via TESTCONTAINERS_HOST_OVERRIDE).
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("inventory.service.url", () -> "http://localhost:8888");
     }
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    private final TestRestTemplate restTemplate;
+
+    OrderValidationIT(TestRestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Test
     void shouldReturn400WhenOrderIdIsInvalidUUID() {

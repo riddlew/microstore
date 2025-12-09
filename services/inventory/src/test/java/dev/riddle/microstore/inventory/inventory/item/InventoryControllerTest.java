@@ -6,8 +6,8 @@ import dev.riddle.microstore.inventory.inventory.item.dto.ItemResponse;
 import dev.riddle.microstore.inventory.shared.error.NotFoundException;
 import dev.riddle.microstore.inventory.testutil.ItemTestData;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,16 +20,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(InventoryController.class)
+@AutoConfigureMockMvc(addFilters = false) // disable security filters for controller-only tests
 public class InventoryControllerTest {
 
-	@Autowired
-	private MockMvc mockMvc;
+	private final MockMvc mockMvc;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
 	@MockitoBean
 	private InventoryService inventoryService;
+
+	InventoryControllerTest(MockMvc mockMvc, ObjectMapper objectMapper) {
+		this.mockMvc = mockMvc;
+		this.objectMapper = objectMapper;
+	}
 
 	@Test
 	void createItem_withValidRequest_shouldReturnCreatedItem() throws Exception {

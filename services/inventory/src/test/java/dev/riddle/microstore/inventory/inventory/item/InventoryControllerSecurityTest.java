@@ -5,12 +5,12 @@ import dev.riddle.microstore.inventory.inventory.item.dto.CreateItemRequest;
 import dev.riddle.microstore.inventory.inventory.item.dto.ItemResponse;
 import dev.riddle.microstore.inventory.testutil.ItemTestData;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 import dev.riddle.microstore.inventory.config.ResourceServerConfig;
 
@@ -31,14 +31,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(ResourceServerConfig.class)
 class InventoryControllerSecurityTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    private final MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private InventoryService service;
+
+    // Provide a JwtDecoder bean so SecurityFilterChain can initialize
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
+
+    InventoryControllerSecurityTest(MockMvc mockMvc, ObjectMapper objectMapper) {
+        this.mockMvc = mockMvc;
+        this.objectMapper = objectMapper;
+    }
 
     @Test
     void getItem_withoutAuth_shouldReturn401() throws Exception {

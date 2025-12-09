@@ -63,6 +63,10 @@ services:
     container_name: microstore-auth
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      AUTH_JWK_PATH: /app/keys/auth.jwks
+      AUTH_JWK_KID: microstore-auth-dev
+    volumes:
+      - ./services/auth/keys:/app/keys:ro
     ports:
       - "5500:9000"
     depends_on:

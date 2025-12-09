@@ -2,7 +2,6 @@ package dev.riddle.microstore.inventory.inventory.item;
 
 import dev.riddle.microstore.inventory.testutil.ItemTestData;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -28,13 +27,17 @@ public class InventoryItemRespositoryTest {
 
 	@DynamicPropertySource
 	static void configureProperties(DynamicPropertyRegistry registry) {
+		// Use Testcontainers-provided JDBC URL (mapped host/port, via TESTCONTAINERS_HOST_OVERRIDE).
 		registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
 		registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
 		registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
 	}
 
-	@Autowired
-	private InventoryItemRepository inventoryItemRepository;
+	private final InventoryItemRepository inventoryItemRepository;
+
+	InventoryItemRespositoryTest(InventoryItemRepository inventoryItemRepository) {
+		this.inventoryItemRepository = inventoryItemRepository;
+	}
 
 	@Test
 	void shouldSaveAndFindBySku() {

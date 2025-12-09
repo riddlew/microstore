@@ -26,13 +26,28 @@ class InventoryClientTest {
     void setUp(WireMockRuntimeInfo wmRuntimeInfo) {
         baseUrl = wmRuntimeInfo.getHttpBaseUrl();
 
-        // Mock OAuth2 setup (no actual token exchange in tests)
+        // Mock OAuth2 setup to use WireMock as the token endpoint
+        String tokenUri = baseUrl + "/oauth2/token";
+
+        // Stub token endpoint to return a fake access token
+        stubFor(post(urlEqualTo("/oauth2/token"))
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withBody("""
+                    {
+                      "access_token": "test-token",
+                      "token_type": "Bearer",
+                      "expires_in": 3600,
+                      "scope": "inventory.read inventory.write"
+                    }
+                    """)));
+
         ClientRegistration registration = ClientRegistration
                 .withRegistrationId("orders-service")
                 .clientId("orders-service")
                 .clientSecret("secret")
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .tokenUri("http://localhost:9000/oauth2/token")
+                .tokenUri(tokenUri)
                 .build();
 
         InMemoryClientRegistrationRepository registrationRepository =

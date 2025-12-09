@@ -15,16 +15,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       
-      - name: Build and Test
-        working-directory: ./services/auth
-        run: mvn -B verify
+      - name: Run Tests in Docker
+        run: |
+          docker-compose -f docker-compose.test.yml run --rm test-auth
       
       - name: Test Report
         if: always()
@@ -43,16 +39,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       
-      - name: Build and Test
-        working-directory: ./services/inventory
-        run: mvn -B verify
+      - name: Run Tests in Docker
+        run: |
+          docker-compose -f docker-compose.test.yml run --rm test-inventory
       
       - name: Test Report
         if: always()
@@ -60,5 +52,29 @@ jobs:
         with:
           name: Inventory Service Tests
           path: services/inventory/target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+  build-orders:
+    name: Build & Test Orders Service
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Run Tests in Docker
+        run: |
+          docker-compose -f docker-compose.test.yml run --rm test-orders
+      
+      - name: Test Report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Orders Service Tests
+          path: services/orders/target/surefire-reports/*.xml
           reporter: java-junit
           fail-on-error: true
