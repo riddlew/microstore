@@ -69,6 +69,7 @@ Content-Type: application/json
   "name": "Gaming Laptop",
   "description": "High-performance gaming laptop with RTX 4080",
   "quantity": 10,
+  "priceInCents": 199999,
   "reorderLevel": 5,
   "reorderQuantity": 10
 }
@@ -84,6 +85,7 @@ Content-Type: application/json
   "name": "Wireless Mouse",
   "description": "Ergonomic wireless mouse",
   "quantity": 50,
+  "priceInCents": 2999,
   "reorderLevel": 20,
   "reorderQuantity": 30
 }
@@ -99,6 +101,7 @@ Content-Type: application/json
   "name": "Mechanical Keyboard",
   "description": "RGB mechanical keyboard with cherry MX switches",
   "quantity": 25,
+  "priceInCents": 12999,
   "reorderLevel": 10,
   "reorderQuantity": 20
 }
@@ -114,7 +117,8 @@ Authorization: Bearer {{getInventoryToken.response.body.access_token}}
 Content-Type: application/json
 
 {
-  "quantity": 5
+  "quantity": 5,
+  "priceInCents": 299999
 }
 
 ### Delete item
