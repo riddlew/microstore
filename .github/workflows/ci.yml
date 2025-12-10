@@ -20,7 +20,7 @@ jobs:
       
       - name: Run Tests in Docker
         run: |
-          docker-compose -f docker-compose.test.yml run --rm test-auth
+          docker compose -f docker-compose.test.yml run --rm test-auth
       
       - name: Test Report
         if: always()
@@ -44,7 +44,7 @@ jobs:
       
       - name: Run Tests in Docker
         run: |
-          docker-compose -f docker-compose.test.yml run --rm test-inventory
+          docker compose -f docker-compose.test.yml run --rm test-inventory
       
       - name: Test Report
         if: always()
@@ -68,7 +68,7 @@ jobs:
       
       - name: Run Tests in Docker
         run: |
-          docker-compose -f docker-compose.test.yml run --rm test-orders
+          docker compose -f docker-compose.test.yml run --rm test-orders
       
       - name: Test Report
         if: always()
