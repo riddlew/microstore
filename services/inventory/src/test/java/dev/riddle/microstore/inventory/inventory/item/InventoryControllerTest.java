@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(InventoryController.class)
 @AutoConfigureMockMvc(addFilters = false) // disable security filters for controller-only tests
+@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 public class InventoryControllerTest {
 
 	private final MockMvc mockMvc;
